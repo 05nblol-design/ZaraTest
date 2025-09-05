@@ -40,8 +40,8 @@ services:
       echo "🏗️ Building frontend..."
       echo "📁 Current directory: $(pwd)"
       
-      # Usar npm run build diretamente (mais confiável)
-      npm run build && cd ..
+      # Usar npx vite build diretamente (mais confiável)
+      npx vite build && cd ..
       
       # Verificação básica do build
       echo "🔍 Checking build output..."
