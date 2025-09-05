@@ -756,19 +756,7 @@ app.use(express.static(path.join(__dirname, 'client', 'dist')));
 
 // Rotas específicas para diferentes tipos de usuário (React SPA)
 app.get('/operador', (req, res) => {
-  try {
-    console.log('🔍 Tentando servir /operador');
-    const filePath = path.join(__dirname, 'client', 'dist', 'index.html');
-    console.log('📁 Caminho do arquivo:', filePath);
-    res.sendFile(filePath);
-  } catch (error) {
-    console.error('❌ Erro ao servir /operador:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao servir página do operador',
-      error: error.message
-    });
-  }
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 });
 
 app.get('/login', (req, res) => {
