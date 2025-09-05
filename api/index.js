@@ -148,13 +148,11 @@ app.post('/api/auth/login', (req, res) => {
   if (demoUsers[username] && password === '123456') {
     res.json({
       success: true,
-      data: {
-        token: 'demo-token-' + Date.now(),
-        user: {
-          id: Date.now(),
-          username,
-          ...demoUsers[username]
-        }
+      token: 'demo-token-' + Date.now(),
+      user: {
+        id: Date.now(),
+        username,
+        ...demoUsers[username]
       }
     });
   } else {
