@@ -3,7 +3,6 @@ import './Sidebar.css'
 const Sidebar = ({ user, activeView, onViewChange }) => {
   const menuItems = {
     operator: [
-      { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-tachometer-alt' },
       { id: 'quality-tests', label: 'Testes de Qualidade', icon: 'fas fa-clipboard-check' },
       { id: 'teflon-change', label: 'Troca de Teflon', icon: 'fas fa-exchange-alt' },
       { id: 'production', label: 'Produção', icon: 'fas fa-industry' }

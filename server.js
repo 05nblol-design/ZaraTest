@@ -50,7 +50,7 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       scriptSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:", "https://zara-quality-system-2.onrender.com"]
+      connectSrc: ["'self'", "ws:", "wss:", "https://zara-test.vercel.app"]
     }
   }
 }));
@@ -522,20 +522,26 @@ const qualityTestRoutes = require('./src/routes/qualityTests');
 const teflonRoutes = require('./src/routes/teflon');
 const operationSessionRoutes = require('./src/routes/operationSession');
 
+// Registrar rotas da API ANTES da conexão com MongoDB
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/machines', machineRoutes);
+app.use('/api/quality-tests', qualityTestRoutes);
+app.use('/api/teflon', teflonRoutes);
+app.use('/api/operation-session', operationSessionRoutes);
+app.use('/api/notifications', require('./src/routes/notifications'));
+app.use('/api/dashboard', require('./src/routes/dashboard'));
+app.use('/api/sse', require('./src/routes/sse'));
+
 
 // Importar testes automáticos
 // Autotest removido - não faz mais parte do novo sistema
 
 // Definir caminhos dos arquivos estáticos e index.html globalmente
-// Em produção, os arquivos são copiados para ./public durante o build
-// Em desenvolvimento, servir diretamente de client/dist
-const staticPath = process.env.NODE_ENV === 'production' 
-  ? path.join(__dirname, '..', 'public')
-  : path.join(__dirname, '..', 'client', 'dist');
-
-const indexPath = process.env.NODE_ENV === 'production'
-  ? path.join(__dirname, '..', 'public', 'index.html')
-  : path.join(__dirname, '..', 'client', 'dist', 'index.html');
+// Para Vercel, sempre usar client/dist (arquivos são servidos pelo @vercel/static)
+// Em desenvolvimento local, servir diretamente de client/dist
+const staticPath = path.join(__dirname, 'client', 'dist');
+const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
 
 console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
 console.log('🔍 Caminho do index.html:', indexPath);
@@ -556,13 +562,13 @@ startServer().then(() => {
 app.get('/api/debug/operador', (req, res) => {
   try {
     const fs = require('fs');
-    const filePath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
+    const filePath = path.join(__dirname, 'client', 'dist', 'index.html');
     
     // Verificar se o arquivo existe
     const fileExists = fs.existsSync(filePath);
     
     // Verificar se a pasta dist existe
-    const distPath = path.join(__dirname, '..', 'client', 'dist');
+    const distPath = path.join(__dirname, 'client', 'dist');
     const distExists = fs.existsSync(distPath);
     
     // Listar arquivos na pasta dist se existir
@@ -764,16 +770,7 @@ app.get('/api/debug/user-info/:username', async (req, res) => {
   }
 });
 
-  // Usar rotas após conexão com MongoDB
-  app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/machines', machineRoutes);
-app.use('/api/quality-tests', qualityTestRoutes);
-app.use('/api/teflon', teflonRoutes);
-app.use('/api/operation-session', operationSessionRoutes);
-app.use('/api/notifications', require('./src/routes/notifications'));
-app.use('/api/dashboard', require('./src/routes/dashboard'));
-app.use('/api/sse', require('./src/routes/sse'));
+  // Rotas já registradas antes da conexão com MongoDB
 
 // Arquivos estáticos já configurados antes da conexão com MongoDB
 
@@ -1114,13 +1111,8 @@ app.get('/', (req, res) => {
 // Rota de status da API
 app.get('/api/status', (req, res) => {
   // Determinar URL do frontend baseada no ambiente
-  // Detectar se está rodando no Render automaticamente
-  const isRender = process.env.RENDER || 
-                   process.env.RENDER_SERVICE_ID || 
-                   (process.env.NODE_ENV === 'production' && process.env.PORT);
-  
-  const frontendUrl = isRender 
-    ? 'https://zara-quality-system-2.onrender.com'
+  const frontendUrl = process.env.NODE_ENV === 'production' 
+    ? 'https://zara-test.vercel.app'
     : 'http://localhost:3000';
     
   res.json({

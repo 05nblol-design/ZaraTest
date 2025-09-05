@@ -385,3 +385,118 @@ input:focus, select:focus, textarea:focus {
 .text-gray-200 {
   color: #e5e7eb;
 }
+
+/* Estilos para interface de operação */
+.operation-status {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 2px solid var(--border-light);
+}
+
+.timer-display {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.timer-display h3 {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.timer {
+  font-size: 3rem;
+  font-weight: 700;
+  font-family: 'Poppins', monospace;
+  color: var(--primary-blue);
+  background: var(--background-white);
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  border: 3px solid var(--primary-blue);
+  display: inline-block;
+  min-width: 150px;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.timer-warning {
+  color: #dc2626;
+  border-color: #dc2626;
+  background: #fef2f2;
+  animation: pulse-warning 1s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: var(--shadow-md);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  }
+}
+
+.operation-info {
+  background: var(--background-white);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.operation-info p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.operation-info strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  min-width: 200px;
+}
+
+.view-actions {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* Melhorias nos badges */
+.badge-success {
+  background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-green-light) 100%);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+  .timer {
+    font-size: 2rem;
+    padding: 0.75rem 1.5rem;
+    min-width: 120px;
+  }
+  
+  .operation-status {
+    margin: 1rem 0;
+    padding: 1rem;
+  }
+  
+  .btn-lg {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+    min-width: 160px;
+  }
+}

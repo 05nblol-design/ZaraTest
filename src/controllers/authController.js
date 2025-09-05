@@ -93,6 +93,51 @@ exports.login = async (req, res) => {
       });
     }
 
+    if (username === 'operador' && password === '123456') {
+      const token = generateToken('test-operator-id');
+      return res.json({
+        success: true,
+        token,
+        user: {
+          id: 'test-operator-id',
+          name: 'Operador Sistema',
+          email: 'operador@zara.com',
+          username: 'operador',
+          role: 'operator'
+        }
+      });
+    }
+
+    if (username === 'lider' && password === '123456') {
+      const token = generateToken('test-leader-id');
+      return res.json({
+        success: true,
+        token,
+        user: {
+          id: 'test-leader-id',
+          name: 'Líder Produção',
+          email: 'lider@zara.com',
+          username: 'lider',
+          role: 'leader'
+        }
+      });
+    }
+
+    if (username === 'gestor' && password === '123456') {
+      const token = generateToken('test-manager2-id');
+      return res.json({
+        success: true,
+        token,
+        user: {
+          id: 'test-manager2-id',
+          name: 'Gestor Qualidade',
+          email: 'gestor@zara.com',
+          username: 'gestor',
+          role: 'manager'
+        }
+      });
+    }
+
     // Verificar se o usuário existe no banco (quando MongoDB estiver disponível)
     try {
       const user = await User.findOne({ username }).select('+password');

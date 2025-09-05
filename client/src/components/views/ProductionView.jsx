@@ -4,18 +4,12 @@ import axios from 'axios'
 const ProductionView = ({ user }) => {
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
   const [machines, setMachines] = useState([])
-  const [operators, setOperators] = useState([])
-  const [formData, setFormData] = useState({
-    machine: '',
-    operator: '',
-    shift: '',
-    productType: '',
-    targetQuantity: '',
-    startTime: '',
-    observations: ''
-  })
+  const [selectedMachine, setSelectedMachine] = useState('')
+  const [operationActive, setOperationActive] = useState(false)
+  const [timeRemaining, setTimeRemaining] = useState(120) // 2 minutos em segundos
+  const [timerInterval, setTimerInterval] = useState(null)
+  const [currentSession, setCurrentSession] = useState(null)
 
   useEffect(() => {
     loadData()
@@ -24,23 +18,112 @@ const ProductionView = ({ user }) => {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [sessionsResponse, machinesResponse, operatorsResponse] = await Promise.all([
+      const [sessionsResponse, machinesResponse] = await Promise.all([
         axios.get('/api/operation-session/all'),
-        axios.get('/api/machines'),
-        axios.get('/api/users?role=operator')
+        axios.get('/api/machines')
       ])
       setSessions(sessionsResponse.data.data || [])
       setMachines(machinesResponse.data.data || [])
-      setOperators(operatorsResponse.data.data || [])
     } catch (error) {
       console.error('Erro ao carregar dados:', error)
       setSessions([])
       setMachines([])
-      setOperators([])
     } finally {
       setLoading(false)
     }
   }
+
+  const startOperation = async () => {
+    if (!selectedMachine) {
+      alert('Por favor, selecione uma máquina')
+      return
+    }
+
+    try {
+      const response = await axios.post('/api/operation-session', {
+        machine: selectedMachine,
+        operator: user.id,
+        status: 'active',
+        startTime: new Date().toISOString()
+      })
+      
+      setCurrentSession(response.data.data)
+      setOperationActive(true)
+      setTimeRemaining(120) // 2 minutos
+      
+      // Iniciar cronômetro
+      const interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Tempo esgotado - enviar notificação
+            sendNotificationToLeaders()
+            clearInterval(interval)
+            setOperationActive(false)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+      
+      setTimerInterval(interval)
+    } catch (error) {
+      console.error('Erro ao iniciar operação:', error)
+      alert('Erro ao iniciar operação')
+    }
+  }
+
+  const completeOperation = async () => {
+    if (!currentSession) return
+
+    try {
+      await axios.patch(`/api/operation-session/${currentSession._id}`, {
+        status: 'completed',
+        endTime: new Date().toISOString()
+      })
+      
+      // Limpar cronômetro
+      if (timerInterval) {
+        clearInterval(timerInterval)
+        setTimerInterval(null)
+      }
+      
+      setOperationActive(false)
+      setCurrentSession(null)
+      setTimeRemaining(120)
+      loadData()
+    } catch (error) {
+      console.error('Erro ao completar operação:', error)
+    }
+  }
+
+  const sendNotificationToLeaders = async () => {
+    try {
+      await axios.post('/api/notifications', {
+        type: 'operation_timeout',
+        message: `Operação na máquina ${selectedMachine} não foi concluída em 2 minutos`,
+        targetRoles: ['leader', 'manager'],
+        machineId: selectedMachine,
+        operatorId: user.id
+      })
+    } catch (error) {
+      console.error('Erro ao enviar notificação:', error)
+    }
+  }
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
+  // Cleanup do timer quando componente desmonta
+  useEffect(() => {
+    return () => {
+      if (timerInterval) {
+        clearInterval(timerInterval)
+      }
+    }
+  }, [timerInterval])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -145,244 +228,125 @@ const ProductionView = ({ user }) => {
       <div className="view-header">
         <h1 className="view-title">Produção</h1>
         <p className="view-subtitle">
-          Gerencie e monitore as sessões de produção das máquinas.
+          Selecione uma máquina e inicie a operação.
         </p>
-        <div className="view-actions">
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowForm(true)}
-          >
-            <i className="fas fa-plus"></i>
-            Nova Sessão
-          </button>
-        </div>
       </div>
-
-      {showForm && (
-        <div className="section">
-          <div className="card">
-            <div className="card-header">
-              <h2 className="card-title">Nova Sessão de Produção</h2>
-              <button 
-                className="btn btn-secondary"
-                onClick={() => setShowForm(false)}
-              >
-                <i className="fas fa-times"></i>
-                Cancelar
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2">
-                <div className="input-group">
-                  <label htmlFor="machine">Máquina</label>
-                  <select
-                    id="machine"
-                    name="machine"
-                    value={formData.machine}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Selecione uma máquina</option>
-                    {machines.map(machine => (
-                      <option key={machine._id} value={machine._id}>
-                        {machine.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="input-group">
-                  <label htmlFor="operator">Operador</label>
-                  <select
-                    id="operator"
-                    name="operator"
-                    value={formData.operator}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Selecione um operador</option>
-                    {operators.map(operator => (
-                      <option key={operator._id} value={operator._id}>
-                        {operator.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-3">
-                <div className="input-group">
-                  <label htmlFor="shift">Turno</label>
-                  <select
-                    id="shift"
-                    name="shift"
-                    value={formData.shift}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Selecione o turno</option>
-                    <option value="morning">Manhã (06:00-14:00)</option>
-                    <option value="afternoon">Tarde (14:00-22:00)</option>
-                    <option value="night">Noite (22:00-06:00)</option>
-                  </select>
-                </div>
-                
-                <div className="input-group">
-                  <label htmlFor="productType">Tipo de Produto</label>
-                  <input
-                    type="text"
-                    id="productType"
-                    name="productType"
-                    value={formData.productType}
-                    onChange={handleInputChange}
-                    placeholder="Ex: Peça A, Componente B"
-                    required
-                  />
-                </div>
-                
-                <div className="input-group">
-                  <label htmlFor="targetQuantity">Meta de Produção</label>
-                  <input
-                    type="number"
-                    id="targetQuantity"
-                    name="targetQuantity"
-                    value={formData.targetQuantity}
-                    onChange={handleInputChange}
-                    min="1"
-                    required
-                  />
-                </div>
-              </div>
-              
-              <div className="input-group">
-                <label htmlFor="startTime">Horário de Início</label>
-                <input
-                  type="datetime-local"
-                  id="startTime"
-                  name="startTime"
-                  value={formData.startTime}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              
-              <div className="input-group">
-                <label htmlFor="observations">Observações</label>
-                <textarea
-                  id="observations"
-                  name="observations"
-                  value={formData.observations}
-                  onChange={handleInputChange}
-                  rows="3"
-                  placeholder="Observações sobre a sessão..."
-                ></textarea>
-              </div>
-              
-              <div className="form-actions">
-                <button type="submit" className="btn btn-primary">
-                  <i className="fas fa-play"></i>
-                  Iniciar Sessão
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       <div className="section">
         <div className="card">
           <div className="card-header">
-            <h2 className="card-title">Sessões de Produção</h2>
+            <h2 className="card-title">Controle de Operação</h2>
           </div>
           
-          {sessions.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-state-icon">
-                <i className="fas fa-industry"></i>
-              </div>
-              <h3 className="empty-state-title">Nenhuma sessão encontrada</h3>
-              <p className="empty-state-description">
-                Não há sessões de produção registradas ainda.
-              </p>
-              <button 
-                className="btn btn-primary"
-                onClick={() => setShowForm(true)}
+          <div className="card-body">
+            <div className="input-group">
+              <label htmlFor="machine">Máquina</label>
+              <select
+                id="machine"
+                value={selectedMachine}
+                onChange={(e) => setSelectedMachine(e.target.value)}
+                disabled={operationActive}
+                required
               >
-                <i className="fas fa-plus"></i>
-                Criar Primeira Sessão
-              </button>
+                <option value="">Selecione uma máquina</option>
+                {machines.map(machine => (
+                  <option key={machine._id} value={machine._id}>
+                    {machine.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          ) : (
-            <div className="table-container">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Máquina</th>
-                    <th>Operador</th>
-                    <th>Produto</th>
-                    <th>Status</th>
-                    <th>Progresso</th>
-                    <th>Eficiência</th>
-                    <th>Duração</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sessions.map(session => {
-                    const efficiency = calculateEfficiency(session.producedQuantity, session.targetQuantity)
-                    return (
-                      <tr key={session._id}>
-                        <td>{session.machine?.name || 'N/A'}</td>
-                        <td>{session.operator?.name || 'N/A'}</td>
-                        <td>{session.productType}</td>
-                        <td>
-                          <span className={`badge ${getStatusBadge(session.status)}`}>
-                            {getStatusText(session.status)}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="progress-info">
-                            <span>{session.producedQuantity || 0}/{session.targetQuantity}</span>
-                            <div className="progress-bar">
-                              <div 
-                                className="progress-fill"
-                                style={{ width: `${Math.min(efficiency, 100)}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={getEfficiencyColor(efficiency)}>
-                            {efficiency}%
-                          </span>
-                        </td>
-                        <td>{formatDuration(session.startTime, session.endTime)}</td>
-                        <td>
-                          <div className="btn-group">
-                            {session.status === 'active' && (
-                              <button 
-                                className="btn btn-warning"
-                                onClick={() => handleEndSession(session._id)}
-                                title="Finalizar sessão"
-                              >
-                                <i className="fas fa-stop"></i>
-                              </button>
-                            )}
-                            <button className="btn btn-secondary" title="Ver detalhes">
-                              <i className="fas fa-eye"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+
+            {operationActive && (
+              <div className="operation-status">
+                <div className="timer-display">
+                  <h3>Tempo Restante</h3>
+                  <div className={`timer ${timeRemaining <= 30 ? 'timer-warning' : ''}`}>
+                    {formatTime(timeRemaining)}
+                  </div>
+                </div>
+                
+                <div className="operation-info">
+                  <p><strong>Máquina:</strong> {machines.find(m => m._id === selectedMachine)?.name}</p>
+                  <p><strong>Operador:</strong> {user.name}</p>
+                  <p><strong>Status:</strong> <span className="badge badge-success">Operação Ativa</span></p>
+                </div>
+              </div>
+            )}
+
+            <div className="view-actions">
+              {!operationActive ? (
+                <button 
+                  className="btn btn-primary btn-lg"
+                  onClick={startOperation}
+                  disabled={!selectedMachine}
+                >
+                  <i className="fas fa-play"></i>
+                  Iniciar Operação
+                </button>
+              ) : (
+                <button 
+                  className="btn btn-success btn-lg"
+                  onClick={completeOperation}
+                >
+                  <i className="fas fa-check"></i>
+                  Concluir Operação
+                </button>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
+
+      
+      {/* Exibir dados para líderes e gestores */}
+      {(user.role === 'leader' || user.role === 'manager') && (
+        <div className="section">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="card-title">Sessões de Produção</h2>
+            </div>
+            
+            <div className="card-body">
+              {sessions.length === 0 ? (
+                <div className="empty-state">
+                  <p>Nenhuma sessão de produção encontrada.</p>
+                </div>
+              ) : (
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Máquina</th>
+                        <th>Operador</th>
+                        <th>Status</th>
+                        <th>Início</th>
+                        <th>Duração</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sessions.map(session => (
+                        <tr key={session._id}>
+                          <td>{session.machine?.name || 'N/A'}</td>
+                          <td>{session.operator?.name || 'N/A'}</td>
+                          <td>
+                            <span className={`badge ${getStatusBadge(session.status)}`}>
+                              {getStatusText(session.status)}
+                            </span>
+                          </td>
+                          <td>{formatDate(session.startTime)}</td>
+                          <td>{formatDuration(session.startTime, session.endTime)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }

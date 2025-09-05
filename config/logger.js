@@ -42,41 +42,47 @@ const transports = [
     format: consoleFormat,
     handleExceptions: true,
     handleRejections: true
-  }),
-
-  // Arquivo de logs combinados com rotação diária
-  new DailyRotateFile({
-    filename: path.join(logDir, 'application-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '14d',
-    format: logFormat,
-    level: 'info'
-  }),
-
-  // Arquivo de logs de erro com rotação diária
-  new DailyRotateFile({
-    filename: path.join(logDir, 'error-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '30d',
-    format: logFormat,
-    level: 'error'
-  }),
-
-  // Arquivo de logs de acesso/auditoria
-  new DailyRotateFile({
-    filename: path.join(logDir, 'access-%DATE%.log'),
-    datePattern: 'YYYY-MM-DD',
-    zippedArchive: true,
-    maxSize: '20m',
-    maxFiles: '30d',
-    format: logFormat,
-    level: 'http'
   })
 ];
+
+// Adicionar transports de arquivo apenas se não estiver no Vercel
+const isVercel = process.env.VERCEL || process.env.VERCEL_ENV;
+if (!isVercel) {
+  transports.push(
+    // Arquivo de logs combinados com rotação diária
+    new DailyRotateFile({
+      filename: path.join(logDir, 'application-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '14d',
+      format: logFormat,
+      level: 'info'
+    }),
+
+    // Arquivo de logs de erro com rotação diária
+    new DailyRotateFile({
+      filename: path.join(logDir, 'error-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '30d',
+      format: logFormat,
+      level: 'error'
+    }),
+
+    // Arquivo de logs de acesso/auditoria
+    new DailyRotateFile({
+      filename: path.join(logDir, 'access-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      zippedArchive: true,
+      maxSize: '20m',
+      maxFiles: '30d',
+      format: logFormat,
+      level: 'http'
+    })
+  );
+}
 
 // Criar logger principal
 const logger = winston.createLogger({
@@ -92,17 +98,11 @@ const logger = winston.createLogger({
 });
 
 // Logger específico para auditoria
-const auditLogger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()
-  ),
-  defaultMeta: {
-    service: 'zara-quality-audit',
-    type: 'audit'
-  },
-  transports: [
+const auditTransports = [];
+
+// Adicionar transport de arquivo apenas se não estiver no Vercel
+if (!isVercel) {
+  auditTransports.push(
     new DailyRotateFile({
       filename: path.join(logDir, 'audit-%DATE%.log'),
       datePattern: 'YYYY-MM-DD',
@@ -114,7 +114,30 @@ const auditLogger = winston.createLogger({
         winston.format.json()
       )
     })
-  ]
+  );
+} else {
+  // No Vercel, usar apenas console para auditoria
+  auditTransports.push(
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      )
+    })
+  );
+}
+
+const auditLogger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  defaultMeta: {
+    service: 'zara-quality-audit',
+    type: 'audit'
+  },
+  transports: auditTransports
 });
 
 // Middleware para logs de requisições HTTP

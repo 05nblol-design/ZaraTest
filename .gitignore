@@ -94,3 +94,4 @@ test-*.html
 # Arquivos de configuração sensíveis
 config/production.json
 config/local.json
+.vercel

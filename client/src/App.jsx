@@ -32,8 +32,20 @@ function AppContent() {
         element={user ? <Dashboard /> : <Navigate to="/login" replace />} 
       />
       <Route 
+        path="/production" 
+        element={user ? <Dashboard /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/quality-tests" 
+        element={user ? <Dashboard /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
+        path="/teflon-change" 
+        element={user ? <Dashboard /> : <Navigate to="/login" replace />} 
+      />
+      <Route 
         path="/" 
-        element={<Navigate to={user ? "/dashboard" : "/login"} replace />} 
+        element={<Navigate to={user ? (user.role === 'operator' ? "/production" : "/dashboard") : "/login"} replace />} 
       />
     </Routes>
   )
