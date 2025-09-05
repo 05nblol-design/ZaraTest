@@ -10,19 +10,13 @@ services:
     buildCommand: |
       echo "🔧 Iniciando build do Zara Quality System..."
       npm ci --only=production
-      echo "✅ Dependências do backend instaladas com sucesso!"
-      echo "🔧 Iniciando build do frontend React..."
+      echo "✅ Dependências do backend instaladas!"
+      echo "🔧 Construindo frontend React..."
       cd client
       npm ci
-      echo "📁 Listando arquivos antes do build:"
-      ls -la
       npm run build
-      echo "📁 Verificando se o build foi criado:"
-      ls -la dist/
       echo "✅ Build do frontend concluído!"
       cd ..
-      echo "📁 Verificando estrutura final:"
-      ls -la client/
       echo "🚀 Preparando para deploy..."
     startCommand: |
       echo "🚀 Iniciando Zara Quality System..."
