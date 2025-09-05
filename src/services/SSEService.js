@@ -180,7 +180,11 @@ class SSEService {
                     .limit(20)
                     .lean(),
                 User.find({}, 'username role lastLogin')
-                    .lean(),
+                    .lean()
+                    .catch(err => {
+                        console.log('Erro ao buscar usuários no SSE:', err.message);
+                        return []; // Retornar array vazio em caso de erro
+                    }),
                 Teflon.find({})
                     .populate('machineId', 'name')
                     .lean()

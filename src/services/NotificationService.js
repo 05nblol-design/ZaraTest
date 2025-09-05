@@ -283,7 +283,16 @@ class NotificationService {
         
         // Se usuário não está online, enviar push notification
         if (!onlineUsers.has(userId)) {
-          const user = await User.findById(userId);
+          let user;
+          
+          // Tentar buscar usuário no banco, mas tratar erros de cast
+          try {
+            user = await User.findById(userId);
+          } catch (dbError) {
+            console.log(`Erro ao buscar usuário ${userId} para push notification:`, dbError.message);
+            // Pular este usuário se não conseguir buscar
+            continue;
+          }
           
           if (user && user.pushSubscription) {
             const payload = JSON.stringify({

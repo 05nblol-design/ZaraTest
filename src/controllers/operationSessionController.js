@@ -282,12 +282,28 @@ exports.getAllOperationSessions = async (req, res) => {
     console.log('🔍 getAllOperationSessions - Iniciando busca para líder:', req.user.id);
     
     // Verificar se o usuário é líder ou gestor
-    const user = await User.findById(req.user.id);
-    if (!user || (user.role !== 'leader' && user.role !== 'manager')) {
-      return res.status(403).json({
-        success: false,
-        message: 'Acesso negado. Apenas líderes e gestores podem acessar todas as sessões.'
-      });
+    // Se o usuário já tem role definido (fallback), usar diretamente
+    if (req.user.role && (req.user.role === 'leader' || req.user.role === 'manager')) {
+      // Usuário autorizado via fallback
+    } else {
+      // Tentar buscar no banco apenas se o ID for um ObjectId válido
+      try {
+        const user = await User.findById(req.user.id);
+        if (!user || (user.role !== 'leader' && user.role !== 'manager')) {
+          return res.status(403).json({
+            success: false,
+            message: 'Acesso negado. Apenas líderes e gestores podem acessar todas as sessões.'
+          });
+        }
+      } catch (dbError) {
+        // Se houver erro de cast ou DB, verificar role do fallback
+        if (!req.user.role || (req.user.role !== 'leader' && req.user.role !== 'manager')) {
+          return res.status(403).json({
+            success: false,
+            message: 'Acesso negado. Apenas líderes e gestores podem acessar todas as sessões.'
+          });
+        }
+      }
     }
     
     // Buscar todas as sessões de operação

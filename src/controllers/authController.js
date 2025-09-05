@@ -190,7 +190,38 @@ exports.login = async (req, res) => {
 // @access  Private
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    let user;
+    
+    // Se já temos dados do usuário (fallback), usar diretamente
+    if (req.user.name && req.user.email && req.user.role) {
+      user = {
+        _id: req.user.id,
+        name: req.user.name,
+        email: req.user.email,
+        username: req.user.username,
+        role: req.user.role
+      };
+    } else {
+      // Tentar buscar no banco apenas se o ID for um ObjectId válido
+      try {
+        user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: 'Usuário não encontrado'
+          });
+        }
+      } catch (dbError) {
+        // Se houver erro de cast ou DB, usar dados do fallback
+        user = {
+          _id: req.user.id,
+          name: req.user.name || 'Usuário Sistema',
+          email: req.user.email || 'usuario@sistema.com',
+          username: req.user.username || 'usuario',
+          role: req.user.role || 'operator'
+        };
+      }
+    }
 
     res.status(200).json({
       success: true,
