@@ -532,13 +532,13 @@ startServer().then(() => {
 app.get('/api/debug/operador', (req, res) => {
   try {
     const fs = require('fs');
-    const filePath = path.join(__dirname, 'client', 'dist', 'index.html');
+    const filePath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
     
     // Verificar se o arquivo existe
     const fileExists = fs.existsSync(filePath);
     
     // Verificar se a pasta dist existe
-    const distPath = path.join(__dirname, 'client', 'dist');
+    const distPath = path.join(__dirname, '..', 'client', 'dist');
     const distExists = fs.existsSync(distPath);
     
     // Listar arquivos na pasta dist se existir
@@ -752,7 +752,7 @@ app.use('/api/dashboard', require('./src/routes/dashboard'));
 app.use('/api/sse', require('./src/routes/sse'));
 
 // Servir arquivos estáticos do React build
-const staticPath = path.join(__dirname, 'client', 'dist');
+const staticPath = path.join(__dirname, '..', 'client', 'dist');
 console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
 console.log('🔍 Verificando se o diretório existe:', require('fs').existsSync(staticPath));
 if (require('fs').existsSync(staticPath)) {
@@ -761,7 +761,7 @@ if (require('fs').existsSync(staticPath)) {
 app.use(express.static(staticPath));
 
 // Rotas específicas para diferentes tipos de usuário (React SPA)
-const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
+const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
 console.log('🔍 Caminho do index.html:', indexPath);
 console.log('🔍 Verificando se index.html existe:', require('fs').existsSync(indexPath));
 
@@ -778,11 +778,11 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/lider', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
 });
 
 app.get('/gestor', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
 });
 
 // Rota catch-all para SPA routing (deve vir após rotas específicas)
@@ -792,7 +792,7 @@ app.get('*', (req, res, next) => {
     return next();
   }
   // Para outras rotas, serve o index.html do React para permitir client-side routing
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
 });
 
 // Middleware para rotas não encontradas (deve vir após todas as rotas)
@@ -1080,7 +1080,7 @@ app.post('/api/setup/create-users', async (req, res) => {
 
 // Rota raiz - servir sistema (React se disponível, senão sistema antigo)
 app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
+  const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
   console.log('🔍 Tentando servir index.html da rota raiz:', indexPath);
   res.sendFile(indexPath);
 });
@@ -1112,7 +1112,7 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
-  const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
+  const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
   console.log('🔍 Servindo SPA para rota:', req.path, 'usando:', indexPath);
   res.sendFile(indexPath);
 });
