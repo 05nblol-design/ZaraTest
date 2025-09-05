@@ -1,0 +1,166 @@
+# Render.com Deploy Configuration
+# Zara Quality System - Sistema de Controle de Qualidade
+
+services:
+  - type: web
+    name: zara-quality-system
+    env: node
+    plan: free
+    region: oregon  # us-west-1 (mais próximo do Brasil)
+    buildCommand: |
+      echo "🔧 Iniciando build do Zara Quality System..."
+      npm ci --only=production
+      echo "✅ Dependências do backend instaladas com sucesso!"
+      echo "🔧 Iniciando build do frontend React..."
+      cd client
+      npm ci
+      npm run build
+      echo "✅ Build do frontend concluído!"
+      cd ..
+      echo "🚀 Preparando para deploy..."
+    startCommand: |
+      echo "🚀 Iniciando Zara Quality System..."
+      echo "📊 Modo: $NODE_ENV"
+      echo "🌐 Porta: $PORT"
+      npm start
+    healthCheckPath: /
+    autoDeploy: true
+    
+    # Configurações de performance
+    numInstances: 1
+    
+    # Configurações para WebSocket/Socket.IO
+    routes:
+      - type: rewrite
+        source: /socket.io/*
+        destination: /socket.io/$1
+    
+    # Disco persistente para uploads
+    disk:
+      name: zara-uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 1
+    
+    # Variáveis de ambiente
+    envVars:
+      # Configurações do servidor
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      
+      # Configurações de log
+      - key: LOG_LEVEL
+        value: info
+      
+      # Configurações JWT
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      
+      # Configurações de upload
+      - key: MAX_FILE_SIZE
+        value: 5242880  # 5MB
+      - key: UPLOAD_PATH
+        value: ./uploads
+      
+      # Configurações CORS
+      - key: CORS_ORIGIN
+        value: https://zara-quality-system-2.onrender.com,https://zara-quality-frontend-new.onrender.com
+      
+      # URL do Frontend
+      - key: FRONTEND_URL
+        value: https://zara-quality-system-2.onrender.com
+      
+      # Configurações de cache
+      - key: CACHE_TTL
+        value: 300  # 5 minutos
+      
+      # Timezone
+      - key: TZ
+        value: America/Sao_Paulo
+      
+      # Configurações do sistema de chat
+      - key: CHAT_ENABLED
+        value: true
+      - key: CHAT_MAX_MESSAGES
+        value: 100
+      - key: CHAT_MESSAGE_TTL
+        value: 86400  # 24 horas
+      
+      # Configurações Socket.IO
+      - key: SOCKET_IO_ENABLED
+        value: true
+      - key: SOCKET_IO_CORS_ORIGIN
+        value: https://zara-quality-system-2.onrender.com,https://zara-quality-frontend-new.onrender.com
+      - key: SOCKET_IO_TRANSPORTS
+        value: websocket,polling
+      - key: SOCKET_IO_PING_TIMEOUT
+        value: 60000
+      - key: SOCKET_IO_PING_INTERVAL
+        value: 25000
+      
+      # Configurações do MongoDB Atlas
+      - key: MONGODB_URI
+        sync: false  # Será definida no painel do Render
+      - key: MONGO_URI
+        sync: false  # Fallback, será definida no painel do Render
+      
+      # Configurações de segurança
+      - key: JWT_SECRET
+        sync: false  # Será definida no painel do Render
+      
+      # ⚠️ IMPORTANTES: Defina estas variáveis no painel do Render:
+      # MONGODB_URI - String de conexão do MongoDB Atlas
+      # MONGO_URI - String de conexão do MongoDB Atlas (fallback)
+      # JWT_SECRET - Chave secreta para JWT (mínimo 32 caracteres)
+      # Exemplo: mongodb+srv://user:pass@cluster.mongodb.net/zaradb
+    
+    # Headers de segurança
+    headers:
+      # Proteção contra clickjacking
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      
+      # Proteção contra MIME sniffing
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      
+      # Política de referrer
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      
+      # Política de permissões
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+      
+      # Segurança de transporte
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      
+      # Cache para assets estáticos
+      - path: /css/*
+        name: Cache-Control
+        value: public, max-age=31536000
+      
+      - path: /js/*
+        name: Cache-Control
+        value: public, max-age=31536000
+      
+      - path: /images/*
+        name: Cache-Control
+        value: public, max-age=31536000
+
+# Configurações adicionais para monitoramento
+# (Disponível em planos pagos)
+# alerts:
+#   - type: cpu
+#     threshold: 80
+#   - type: memory
+#     threshold: 80
+#   - type: response_time
+#     threshold: 5000

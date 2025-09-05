@@ -1,0 +1,96 @@
+# Dependências
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# PM2
+.pm2/
+ecosystem.config.js.bak
+
+# MongoDB
+*.mongodb
+*.db
+data/
+mongo-data/
+
+# Uploads e arquivos temporários
+uploads/
+temp/
+tmp/
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs e editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.classpath
+
+# Temporários
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Coverage e testes
+coverage/
+.nyc_output/
+.coverage/
+test-results/
+
+# Build e distribuição
+build/
+dist/
+out/
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# Arquivos de debug e teste
+debug-*.js
+test-*.js
+test-*.html
+*.test.js
+*.spec.js
+
+# Certificados SSL
+*.pem
+*.key
+*.crt
+*.cert
+
+# Arquivos de configuração sensíveis
+config/production.json
+config/local.json

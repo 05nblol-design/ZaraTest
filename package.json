@@ -1,0 +1,90 @@
+{
+  "name": "zara-quality-system",
+  "version": "1.0.0",
+  "description": "Sistema de controle de qualidade Zara - Aplicação Node.js para gestão de testes de qualidade industrial",
+  "main": "server.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "quality-control",
+    "industrial",
+    "nodejs",
+    "express",
+    "mongodb",
+    "dashboard",
+    "real-time",
+    "socket.io"
+  ],
+  "author": "Zara Quality Team",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js --ignore client/",
+    "dev:debug": "nodemon --inspect server.js",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "node autotest.js",
+    "test:integration": "echo \"Integration tests not implemented yet\"",
+    "test:watch": "nodemon --exec \"npm test\"",
+    "lint": "eslint . --ext .js --ignore-path .gitignore",
+    "lint:fix": "eslint . --ext .js --ignore-path .gitignore --fix",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
+    "prod": "NODE_ENV=production node server.js",
+    "build": "npm ci --only=production",
+    "deploy": "node deploy.js",
+    "setup": "npm run create-users && npm run populate-data",
+    "create-users": "node create-users.js",
+    "create-admin": "node create-admin.js",
+    "populate-data": "node populate-test-data.js",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop ecosystem.config.js",
+    "pm2:restart": "pm2 restart ecosystem.config.js",
+    "pm2:delete": "pm2 delete ecosystem.config.js",
+    "pm2:logs": "pm2 logs",
+    "pm2:status": "pm2 status",
+    "logs": "pm2 logs --lines 100",
+    "health": "curl -f http://localhost:3000/api/health || exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.1",
+    "moment": "^2.29.4",
+    "mongodb": "^6.19.0",
+    "mongoose": "^8.18.0",
+    "multer": "^1.4.5-lts.2",
+    "pm2": "^6.0.10",
+    "socket.io": "^4.8.1",
+    "web-push": "^3.6.7",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "joi": "^17.12.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "compression": "^1.7.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-security": "^3.0.1",
+    "mongodb-memory-server": "^10.2.0",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.2.5",
+    "supertest": "^7.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/zara-quality-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/zara-quality-system/issues"
+  },
+  "homepage": "https://github.com/your-username/zara-quality-system#readme"
+}
