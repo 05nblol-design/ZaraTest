@@ -11,7 +11,7 @@
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist",
-        "buildCommand": "npm install && npx vite build"
+        "buildCommand": "npm install --include=dev && npx vite build"
       }
     }
   ],
