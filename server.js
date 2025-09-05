@@ -46,10 +46,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:"]
+      connectSrc: ["'self'", "ws:", "wss:", "https://zara-quality-system-2.onrender.com"]
     }
   }
 }));
@@ -1070,11 +1071,8 @@ server.listen(PORT, HOST, () => {
     }
   } else {
     logger.info('Modo desenvolvimento ativo');
-    // Executar testes automáticos apenas em desenvolvimento
-    logger.info('Executando testes automáticos da API...');
-    runAutoTests().catch(err => {
-      logger.error('Erro nos testes automáticos:', err);
-    });
+    // Testes automáticos foram removidos para otimização
+    logger.info('Sistema pronto para desenvolvimento');
   }
 });
 

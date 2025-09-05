@@ -65,7 +65,7 @@ services:
       
       # Configurações CORS
       - key: CORS_ORIGIN
-        value: https://zara-quality-system-2.onrender.com,https://zara-quality-frontend-new.onrender.com
+        value: https://zara-quality-system-2.onrender.com
       
       # URL do Frontend
       - key: FRONTEND_URL
@@ -91,7 +91,7 @@ services:
       - key: SOCKET_IO_ENABLED
         value: true
       - key: SOCKET_IO_CORS_ORIGIN
-        value: https://zara-quality-system-2.onrender.com,https://zara-quality-frontend-new.onrender.com
+        value: https://zara-quality-system-2.onrender.com
       - key: SOCKET_IO_TRANSPORTS
         value: websocket,polling
       - key: SOCKET_IO_PING_TIMEOUT

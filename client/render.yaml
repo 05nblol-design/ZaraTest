@@ -1,7 +1,6 @@
 services:
-  - type: web
-    name: zara-quality-frontend-new
-    env: static
+  - type: static
+    name: zara-quality-frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
     envVars:
