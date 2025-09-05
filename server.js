@@ -526,6 +526,20 @@ const operationSessionRoutes = require('./src/routes/operationSession');
 // Importar testes automáticos
 // Autotest removido - não faz mais parte do novo sistema
 
+// Definir caminhos dos arquivos estáticos e index.html globalmente
+// Em produção, os arquivos são copiados para ./public durante o build
+// Em desenvolvimento, servir diretamente de client/dist
+const staticPath = process.env.NODE_ENV === 'production' 
+  ? path.join(__dirname, 'public')
+  : path.join(__dirname, '..', 'client', 'dist');
+
+const indexPath = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, 'public', 'index.html')
+  : path.join(__dirname, '..', 'client', 'dist', 'index.html');
+
+console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
+console.log('🔍 Caminho do index.html:', indexPath);
+
 // Iniciar o servidor MongoDB e registrar rotas após conexão
 startServer().then(() => {
   // Endpoint de debug para rota operador
@@ -752,26 +766,13 @@ app.use('/api/dashboard', require('./src/routes/dashboard'));
 app.use('/api/sse', require('./src/routes/sse'));
 
 // Servir arquivos estáticos do frontend
-// Em produção, os arquivos são copiados para ./public durante o build
-// Em desenvolvimento, servir diretamente de client/dist
-const staticPath = process.env.NODE_ENV === 'production' 
-  ? path.join(__dirname, 'public')
-  : path.join(__dirname, '..', 'client', 'dist');
-  
-console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
 console.log('🔍 Verificando se diretório existe:', require('fs').existsSync(staticPath));
 if (require('fs').existsSync(staticPath)) {
   console.log('📂 Conteúdo do diretório:', require('fs').readdirSync(staticPath));
 }
 app.use(express.static(staticPath));
 
-// Rotas específicas para diferentes tipos de usuário (React SPA)
-// Em produção, usar ./public/index.html, em desenvolvimento usar client/dist/index.html
-const indexPath = process.env.NODE_ENV === 'production'
-  ? path.join(__dirname, 'public', 'index.html')
-  : path.join(__dirname, '..', 'client', 'dist', 'index.html');
-  
-console.log('🔍 Caminho do index.html:', indexPath);
+// Verificar se index.html existe
 console.log('🔍 Verificando se index.html existe:', require('fs').existsSync(indexPath));
 
 app.get('/operador', (req, res) => {
