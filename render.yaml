@@ -23,79 +23,46 @@ services:
       echo "🔧 Building frontend..."
       cd client
       echo "📁 Frontend directory: $(pwd)"
-      echo "🔧 Node.js version in client: $(node --version)"
-      
-      # Limpar cache do npm
-      echo "🧹 Clearing npm cache..."
-      npm cache clean --force
       
       # Instalar dependências do frontend (incluindo devDependencies para build)
       echo "📦 Installing frontend dependencies..."
-      npm install --verbose
+      npm install
       echo "✅ Frontend dependencies installed"
-      
-      # Verificar se Vite foi instalado
-      echo "🔍 Checking Vite installation..."
-      npx vite --version || echo "❌ Vite not found"
-      
-      # Verificar se todas as dependências estão instaladas
-      echo "📋 Checking package.json dependencies..."
-      npm ls --depth=0 || echo "⚠️ Some dependencies may be missing"
       
       # Executar build
       echo "🏗️ Running build..."
-      echo "📁 Current directory: $(pwd)"
-      echo "📂 Directory contents before build:"
-      ls -la
-      
-      # Tentar build com npx vite diretamente
-      echo "🔨 Building with Vite..."
-      npx vite build --mode production
-      
-      echo "📂 Directory contents after build:"
-      ls -la
+      npm run build
       echo "✅ Frontend build completed"
       
       # Verificar se build foi bem-sucedido
       if [ ! -d "dist" ]; then
         echo "❌ ERROR: dist directory not created"
+        ls -la
         exit 1
       fi
       
       if [ ! -f "dist/index.html" ]; then
         echo "❌ ERROR: index.html not found in dist"
+        ls -la dist/
         exit 1
       fi
       
       echo "✅ Build verification passed"
-      echo "📂 Dist contents:"
-      ls -la dist/
       
       # Copiar arquivos do frontend para diretório público
       echo "📁 Copying frontend files to public directory..."
-      mkdir -p ../public
-      
-      # Verificar se dist existe e tem conteúdo
-      if [ ! -d "dist" ]; then
-        echo "❌ ERROR: dist directory does not exist"
-        exit 1
-      fi
-      
-      # Copiar todos os arquivos (incluindo ocultos)
-      cp -r dist/. ../public/
+      cd ..
+      mkdir -p public
+      cp -r client/dist/* public/
       
       # Verificar se index.html foi copiado
-      if [ ! -f "../public/index.html" ]; then
+      if [ ! -f "public/index.html" ]; then
         echo "❌ ERROR: index.html not found in public directory after copy"
-        echo "📂 Public directory contents:"
-        ls -la ../public/
+        ls -la public/
         exit 1
       fi
       
       echo "✅ Frontend files copied to public directory"
-      
-      # Voltar para diretório raiz
-      cd ..
       echo "📂 Public directory contents:"
       ls -la public/
       echo "🚀 Build process completed successfully"
