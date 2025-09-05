@@ -24,12 +24,19 @@ services:
       
       # Instalar dependências do frontend (incluindo devDependencies para build)
       echo "📦 Installing frontend dependencies..."
-      npm ci --include=dev
+      npm install
       echo "✅ Frontend dependencies installed"
       
       # Executar build
       echo "🏗️ Running build..."
+      echo "📁 Current directory: $(pwd)"
+      echo "📂 Directory contents before build:"
+      ls -la
+      
       npm run build
+      
+      echo "📂 Directory contents after build:"
+      ls -la
       echo "✅ Frontend build completed"
       
       # Verificar se build foi bem-sucedido
