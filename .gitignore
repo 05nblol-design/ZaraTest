@@ -70,6 +70,7 @@ test-results/
 # Build e distribuição
 build/
 dist/
+!client/dist/
 out/
 
 # Cache
