@@ -530,11 +530,11 @@ const operationSessionRoutes = require('./src/routes/operationSession');
 // Em produção, os arquivos são copiados para ./public durante o build
 // Em desenvolvimento, servir diretamente de client/dist
 const staticPath = process.env.NODE_ENV === 'production' 
-  ? path.join(__dirname, 'public')
+  ? path.join(__dirname, '..', 'public')
   : path.join(__dirname, '..', 'client', 'dist');
 
 const indexPath = process.env.NODE_ENV === 'production'
-  ? path.join(__dirname, 'public', 'index.html')
+  ? path.join(__dirname, '..', 'public', 'index.html')
   : path.join(__dirname, '..', 'client', 'dist', 'index.html');
 
 console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
