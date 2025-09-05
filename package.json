@@ -33,7 +33,7 @@
     "format:check": "prettier --check \"**/*.{js,json,md}\"",
     "prod": "NODE_ENV=production node server.js",
     "build": "cd client && npm install && npx vite build",
-    "vercel-build": "npm run build",
+    "vercel-build": "cd client && npm install && npx vite build",
     "deploy": "vercel --prod",
     "setup": "npm run create-users && npm run populate-data",
     "create-users": "node create-users.js",
