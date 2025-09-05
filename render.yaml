@@ -50,7 +50,24 @@ services:
       # Copiar arquivos do frontend para diretório público
       echo "📁 Copying frontend files to public directory..."
       mkdir -p ../public
-      cp -r dist/* ../public/
+      
+      # Verificar se dist existe e tem conteúdo
+      if [ ! -d "dist" ]; then
+        echo "❌ ERROR: dist directory does not exist"
+        exit 1
+      fi
+      
+      # Copiar todos os arquivos (incluindo ocultos)
+      cp -r dist/. ../public/
+      
+      # Verificar se index.html foi copiado
+      if [ ! -f "../public/index.html" ]; then
+        echo "❌ ERROR: index.html not found in public directory after copy"
+        echo "📂 Public directory contents:"
+        ls -la ../public/
+        exit 1
+      fi
+      
       echo "✅ Frontend files copied to public directory"
       
       # Voltar para diretório raiz
