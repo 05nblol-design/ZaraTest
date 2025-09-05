@@ -29,7 +29,7 @@ services:
       
       # Executar build
       echo "🏗️ Running build..."
-      npm run build
+      NODE_ENV=production npm run build
       echo "✅ Frontend build completed"
       
       # Verificar se build foi bem-sucedido
