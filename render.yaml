@@ -23,26 +23,51 @@ services:
       echo "🔧 Building frontend..."
       cd client
       echo "📁 Frontend directory: $(pwd)"
+      echo "📋 Listing client directory contents:"
+      ls -la
+      
+      # Verificar se package.json existe
+      if [ ! -f "package.json" ]; then
+        echo "❌ ERROR: package.json not found in client directory"
+        exit 1
+      fi
       
       # Instalar dependências do frontend (incluindo devDependencies para build)
       echo "📦 Installing frontend dependencies..."
-      npm install
+      npm ci
       echo "✅ Frontend dependencies installed"
+      
+      # Verificar se node_modules foi criado
+      if [ ! -d "node_modules" ]; then
+        echo "❌ ERROR: node_modules not created, trying npm install"
+        npm install
+      fi
       
       # Executar build
       echo "🏗️ Running build..."
+      echo "📋 Current directory before build: $(pwd)"
       npm run build
       echo "✅ Frontend build completed"
+      
+      # Debug: listar conteúdo após build
+      echo "📋 Directory contents after build:"
+      ls -la
       
       # Verificar se build foi bem-sucedido
       if [ ! -d "dist" ]; then
         echo "❌ ERROR: dist directory not created"
-        ls -la
-        exit 1
+        echo "📋 Trying alternative build with npx vite build:"
+        npx vite build
+        if [ ! -d "dist" ]; then
+          echo "❌ CRITICAL: Both npm run build and npx vite build failed"
+          ls -la
+          exit 1
+        fi
       fi
       
       if [ ! -f "dist/index.html" ]; then
         echo "❌ ERROR: index.html not found in dist"
+        echo "📋 Contents of dist directory:"
         ls -la dist/
         exit 1
       fi
@@ -52,14 +77,39 @@ services:
       # Copiar arquivos do frontend para diretório público
       echo "📁 Copying frontend files to public directory..."
       cd ..
+      echo "📁 Back to root directory: $(pwd)"
+      
+      # Criar diretório public
       mkdir -p public
-      cp -r client/dist/* public/
+      echo "📁 Created public directory"
+      
+      # Verificar se dist existe antes de copiar
+      if [ ! -d "client/dist" ]; then
+        echo "❌ ERROR: client/dist directory not found"
+        echo "📋 Contents of client directory:"
+        ls -la client/
+        exit 1
+      fi
+      
+      # Copiar com verificação
+      echo "📋 Contents of client/dist before copy:"
+      ls -la client/dist/
+      
+      cp -r client/dist/* public/ 2>/dev/null || {
+        echo "⚠️ WARNING: cp -r failed, trying alternative copy method"
+        cp -R client/dist/. public/
+      }
       
       # Verificar se index.html foi copiado
       if [ ! -f "public/index.html" ]; then
         echo "❌ ERROR: index.html not found in public directory after copy"
+        echo "📋 Contents of public directory:"
         ls -la public/
-        exit 1
+        echo "📋 Trying manual copy of index.html:"
+        cp client/dist/index.html public/ 2>/dev/null || {
+          echo "❌ CRITICAL: Cannot copy index.html"
+          exit 1
+        }
       fi
       
       echo "✅ Frontend files copied to public directory"
