@@ -1080,6 +1080,7 @@ app.post('/api/setup/create-users', async (req, res) => {
 
 // Rota raiz - servir sistema (React se disponível, senão sistema antigo)
 app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
   console.log('🔍 Tentando servir index.html da rota raiz:', indexPath);
   res.sendFile(indexPath);
 });
