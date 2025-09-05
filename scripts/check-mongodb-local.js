@@ -62,8 +62,6 @@ async function checkMongoDBVersion() {
 async function checkMongoDBConnection(uri) {
   try {
     await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000
     });
     

@@ -6,8 +6,6 @@ const dbConfig = {
   development: {
     uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/zaraqualitysystem_dev',
     options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
@@ -17,8 +15,6 @@ const dbConfig = {
   test: {
     uri: process.env.MONGODB_URI_TEST || 'mongodb://localhost:27017/zaraqualitysystem_test',
     options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       maxPoolSize: 5,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000
@@ -27,8 +23,6 @@ const dbConfig = {
   production: {
     uri: process.env.MONGODB_URI,
     options: {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       maxPoolSize: 20,
       minPoolSize: 5,
       serverSelectionTimeoutMS: 5000,
