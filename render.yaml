@@ -11,6 +11,8 @@ services:
       echo "🔧 Iniciando build do Zara Quality System..."
       echo "🌍 NODE_ENV: $NODE_ENV"
       echo "📁 Diretório atual: $(pwd)"
+      echo "🔧 Node.js version: $(node --version)"
+      echo "📦 NPM version: $(npm --version)"
       
       # Instalar dependências do backend
       echo "📦 Instalando dependências do backend..."
@@ -21,11 +23,24 @@ services:
       echo "🔧 Building frontend..."
       cd client
       echo "📁 Frontend directory: $(pwd)"
+      echo "🔧 Node.js version in client: $(node --version)"
+      
+      # Limpar cache do npm
+      echo "🧹 Clearing npm cache..."
+      npm cache clean --force
       
       # Instalar dependências do frontend (incluindo devDependencies para build)
       echo "📦 Installing frontend dependencies..."
-      npm install
+      npm install --verbose
       echo "✅ Frontend dependencies installed"
+      
+      # Verificar se Vite foi instalado
+      echo "🔍 Checking Vite installation..."
+      npx vite --version || echo "❌ Vite not found"
+      
+      # Verificar se todas as dependências estão instaladas
+      echo "📋 Checking package.json dependencies..."
+      npm ls --depth=0 || echo "⚠️ Some dependencies may be missing"
       
       # Executar build
       echo "🏗️ Running build..."
@@ -33,7 +48,9 @@ services:
       echo "📂 Directory contents before build:"
       ls -la
       
-      npm run build
+      # Tentar build com npx vite diretamente
+      echo "🔨 Building with Vite..."
+      npx vite build --mode production
       
       echo "📂 Directory contents after build:"
       ls -la
