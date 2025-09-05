@@ -52,80 +52,162 @@ services:
       fi
       echo "✅ Vite is available"
       
-      # Executar build
+      # Executar build com múltiplas tentativas
       echo "🏗️ Running build..."
       echo "📁 Current directory before build: $(pwd)"
-      echo "🔧 Setting NODE_ENV for build..."
-      NODE_ENV=production npm run build
-      echo "✅ Frontend build completed"
+      echo "🔧 Node version: $(node --version)"
+      echo "📦 NPM version: $(npm --version)"
+      
+      # Primeira tentativa: npm run build
+      echo "🔄 Attempt 1: npm run build"
+      if NODE_ENV=production npm run build; then
+        echo "✅ npm run build succeeded"
+      else
+        echo "⚠️ npm run build failed, trying npx vite build"
+        if npx vite build; then
+          echo "✅ npx vite build succeeded"
+        else
+          echo "⚠️ npx vite build failed, trying manual vite build"
+          if ./node_modules/.bin/vite build; then
+            echo "✅ Manual vite build succeeded"
+          else
+            echo "❌ All build methods failed"
+            echo "📋 Package.json scripts:"
+            cat package.json | grep -A 10 '"scripts"'
+            echo "📋 Node modules vite:"
+            ls -la node_modules/.bin/ | grep vite || echo "Vite not found in node_modules/.bin/"
+            exit 1
+          fi
+        fi
+      fi
       
       # Debug: listar conteúdo após build
       echo "📋 Directory contents after build:"
       ls -la
       
-      # Verificar se build foi bem-sucedido
+      # Verificações robustas do build
+      echo "🔍 Verifying build output..."
       if [ ! -d "dist" ]; then
-        echo "❌ ERROR: dist directory not created"
-        echo "📋 Trying alternative build with npx vite build:"
-        npx vite build
-        if [ ! -d "dist" ]; then
-          echo "❌ CRITICAL: Both npm run build and npx vite build failed"
-          ls -la
-          exit 1
-        fi
-      fi
-      
-      if [ ! -f "dist/index.html" ]; then
-        echo "❌ ERROR: index.html not found in dist"
-        echo "📋 Contents of dist directory:"
-        ls -la dist/
+        echo "❌ CRITICAL ERROR: dist directory not created"
+        echo "📋 Current directory contents:"
+        ls -la
+        echo "📋 Checking for alternative output directories:"
+        find . -name "index.html" -type f 2>/dev/null || echo "No index.html found anywhere"
         exit 1
       fi
       
-      echo "✅ Build verification passed"
+      echo "📁 dist directory found, checking contents:"
+      ls -la dist/
+      
+      if [ ! -f "dist/index.html" ]; then
+        echo "❌ CRITICAL ERROR: index.html not found in dist"
+        echo "📋 Contents of dist directory:"
+        ls -la dist/
+        echo "📋 Searching for index.html in subdirectories:"
+        find dist/ -name "index.html" -type f 2>/dev/null || echo "No index.html found in dist/"
+        exit 1
+      fi
+      
+      echo "✅ Build verification passed - index.html found in dist/"
       
       # Copiar arquivos do frontend para diretório público
       echo "📁 Copying frontend files to public directory..."
       cd ..
       echo "📁 Back to root directory: $(pwd)"
       
-      # Criar diretório public
+      # Criar diretório public com permissões adequadas
+      echo "📁 Creating public directory..."
+      rm -rf public 2>/dev/null || true
       mkdir -p public
-      echo "📁 Created public directory"
+      chmod 755 public
+      echo "📁 Public directory created with proper permissions"
       
-      # Verificar se dist existe antes de copiar
+      # Verificações robustas antes da cópia
+      echo "🔍 Pre-copy verifications..."
       if [ ! -d "client/dist" ]; then
-        echo "❌ ERROR: client/dist directory not found"
+        echo "❌ CRITICAL ERROR: client/dist directory not found"
         echo "📋 Contents of client directory:"
         ls -la client/
+        echo "📋 Searching for build output:"
+        find client/ -name "index.html" -type f 2>/dev/null || echo "No index.html found in client/"
         exit 1
       fi
       
-      # Copiar com verificação
+      if [ ! -f "client/dist/index.html" ]; then
+        echo "❌ CRITICAL ERROR: index.html not found in client/dist before copy"
+        echo "📋 Contents of client/dist:"
+        ls -la client/dist/
+        exit 1
+      fi
+      
+      # Múltiplos métodos de cópia com verificação
       echo "📋 Contents of client/dist before copy:"
       ls -la client/dist/
       
-      cp -r client/dist/* public/ 2>/dev/null || {
-        echo "⚠️ WARNING: cp -r failed, trying alternative copy method"
-        cp -R client/dist/. public/
-      }
-      
-      # Verificar se index.html foi copiado
-      if [ ! -f "public/index.html" ]; then
-        echo "❌ ERROR: index.html not found in public directory after copy"
-        echo "📋 Contents of public directory:"
-        ls -la public/
-        echo "📋 Trying manual copy of index.html:"
-        cp client/dist/index.html public/ 2>/dev/null || {
-          echo "❌ CRITICAL: Cannot copy index.html"
-          exit 1
-        }
+      echo "🔄 Attempting copy method 1: cp -r"
+      if cp -r client/dist/* public/ 2>/dev/null; then
+        echo "✅ Copy method 1 succeeded"
+      else
+        echo "⚠️ Copy method 1 failed, trying method 2: cp -R"
+        if cp -R client/dist/. public/ 2>/dev/null; then
+          echo "✅ Copy method 2 succeeded"
+        else
+          echo "⚠️ Copy method 2 failed, trying method 3: rsync"
+          if command -v rsync >/dev/null 2>&1; then
+            if rsync -av client/dist/ public/ 2>/dev/null; then
+              echo "✅ Copy method 3 (rsync) succeeded"
+            else
+              echo "⚠️ rsync failed, trying manual file copy"
+              find client/dist -type f -exec cp {} public/ \; 2>/dev/null || {
+                echo "❌ CRITICAL: All copy methods failed"
+                exit 1
+              }
+              echo "✅ Manual file copy succeeded"
+            fi
+          else
+            echo "⚠️ rsync not available, trying manual file copy"
+            find client/dist -type f -exec cp {} public/ \; 2>/dev/null || {
+              echo "❌ CRITICAL: Manual copy failed"
+              exit 1
+            }
+            echo "✅ Manual file copy succeeded"
+          fi
+        fi
       fi
       
-      echo "✅ Frontend files copied to public directory"
-      echo "📂 Public directory contents:"
+      # Verificações pós-cópia robustas
+      echo "🔍 Post-copy verifications..."
+      echo "📋 Contents of public directory:"
       ls -la public/
-      echo "🚀 Build process completed successfully"
+      
+      if [ ! -f "public/index.html" ]; then
+        echo "❌ CRITICAL ERROR: index.html not found in public directory after copy"
+        echo "📋 Attempting emergency index.html copy:"
+        if [ -f "client/dist/index.html" ]; then
+          cp client/dist/index.html public/index.html || {
+            echo "❌ CRITICAL: Emergency copy failed"
+            exit 1
+          }
+          echo "✅ Emergency copy succeeded"
+        else
+          echo "❌ CRITICAL: Source index.html no longer exists"
+          exit 1
+        fi
+      fi
+      
+      # Verificar conteúdo do index.html
+      echo "🔍 Verifying index.html content..."
+      if [ -s "public/index.html" ]; then
+        echo "✅ index.html exists and has content ($(wc -c < public/index.html) bytes)"
+      else
+        echo "❌ CRITICAL ERROR: index.html is empty or corrupted"
+        exit 1
+      fi
+      
+      echo "✅ Frontend files successfully copied to public directory"
+      echo "📂 Final public directory contents:"
+      ls -la public/
+      echo "🚀 Build process completed successfully - index.html verified"
     startCommand: |
       echo "🚀 Iniciando Zara Quality System..."
       echo "📊 Modo: $NODE_ENV"
