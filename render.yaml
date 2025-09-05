@@ -22,9 +22,9 @@ services:
       cd client
       echo "📁 Frontend directory: $(pwd)"
       
-      # Instalar dependências do frontend
+      # Instalar dependências do frontend (incluindo devDependencies para build)
       echo "📦 Installing frontend dependencies..."
-      npm ci
+      npm ci --include=dev
       echo "✅ Frontend dependencies installed"
       
       # Executar build
