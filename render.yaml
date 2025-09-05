@@ -34,20 +34,20 @@ services:
       
       # Instalar dependências do frontend (método simplificado)
       echo "📦 Installing frontend dependencies..."
-      npm install --production=false
+      cd client && npm install --production=false
       
       # Build simplificado e direto
       echo "🏗️ Building frontend..."
       echo "📁 Current directory: $(pwd)"
       
       # Usar npm run build diretamente (mais confiável)
-      npm run build
+      npm run build && cd ..
       
       # Verificação básica do build
       echo "🔍 Checking build output..."
-      ls -la dist/
+      ls -la client/dist/
       
-      if [ ! -f "dist/index.html" ]; then
+      if [ ! -f "client/dist/index.html" ]; then
         echo "❌ ERROR: Build failed - index.html not found"
         exit 1
       fi
@@ -56,8 +56,7 @@ services:
       
       # Copiar arquivos do frontend para diretório público (método simplificado)
       echo "📁 Copying frontend files to public directory..."
-      cd ..
-      echo "📁 Back to root directory: $(pwd)"
+      echo "📁 Current directory: $(pwd)"
       
       # Criar e copiar diretamente
       mkdir -p public
