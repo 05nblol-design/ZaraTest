@@ -82,7 +82,18 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Resposta vazia do servidor')
       }
 
-      const { token, user: userData } = response.data
+      // Suportar ambas as estruturas de resposta (Vercel e servidor local)
+      let token, userData;
+      
+      if (response.data.data) {
+        // Estrutura do Vercel: { success: true, data: { token, user } }
+        token = response.data.data.token;
+        userData = response.data.data.user;
+      } else {
+        // Estrutura do servidor local: { success: true, token, user }
+        token = response.data.token;
+        userData = response.data.user;
+      }
       
       if (!token || !userData) {
         throw new Error('Token ou dados do usuário não encontrados na resposta')
