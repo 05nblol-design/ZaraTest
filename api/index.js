@@ -62,6 +62,50 @@ app.get('/api/quality-tests', (req, res) => {
   });
 });
 
+app.get('/api/machines', (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 1, name: 'Máquina 01', status: 'active', location: 'Setor A' },
+      { id: 2, name: 'Máquina 02', status: 'active', location: 'Setor A' },
+      { id: 3, name: 'Máquina 03', status: 'maintenance', location: 'Setor B' },
+      { id: 4, name: 'Máquina 04', status: 'active', location: 'Setor B' },
+      { id: 5, name: 'Máquina 05', status: 'offline', location: 'Setor C' }
+    ],
+    message: 'Máquinas carregadas com sucesso'
+  });
+});
+
+app.post('/api/operation-session', (req, res) => {
+  const { machine, operator, status, startTime } = req.body;
+  res.json({
+    success: true,
+    data: {
+      id: Date.now(),
+      machine,
+      operator,
+      status,
+      startTime,
+      createdAt: new Date().toISOString()
+    },
+    message: 'Sessão de operação criada com sucesso'
+  });
+});
+
+app.put('/api/operation-session/:id', (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  res.json({
+    success: true,
+    data: {
+      id: parseInt(id),
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    },
+    message: 'Sessão de operação atualizada com sucesso'
+  });
+});
+
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body;
   
@@ -92,19 +136,11 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// Rota básica da API (placeholder para outras rotas)
-app.get('/api/*', (req, res) => {
-  res.status(503).json({
+// Rota catch-all para APIs não implementadas (deve vir por último)
+app.all('/api/*', (req, res) => {
+  res.status(404).json({
     success: false,
-    message: 'API em manutenção - funcionalidades completas em breve',
-    timestamp: new Date().toISOString()
-  });
-});
-
-app.post('/api/*', (req, res) => {
-  res.status(503).json({
-    success: false,
-    message: 'API em manutenção - funcionalidades completas em breve',
+    message: 'Endpoint não encontrado',
     timestamp: new Date().toISOString()
   });
 });
