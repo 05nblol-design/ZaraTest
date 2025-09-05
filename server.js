@@ -751,17 +751,26 @@ app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/dashboard', require('./src/routes/dashboard'));
 app.use('/api/sse', require('./src/routes/sse'));
 
-// Servir arquivos estáticos do React build
-const staticPath = path.join(__dirname, '..', 'client', 'dist');
+// Servir arquivos estáticos do frontend
+// Em produção, os arquivos são copiados para ./public durante o build
+// Em desenvolvimento, servir diretamente de client/dist
+const staticPath = process.env.NODE_ENV === 'production' 
+  ? path.join(__dirname, 'public')
+  : path.join(__dirname, '..', 'client', 'dist');
+  
 console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
-console.log('🔍 Verificando se o diretório existe:', require('fs').existsSync(staticPath));
+console.log('🔍 Verificando se diretório existe:', require('fs').existsSync(staticPath));
 if (require('fs').existsSync(staticPath)) {
-  console.log('📁 Arquivos no diretório dist:', require('fs').readdirSync(staticPath));
+  console.log('📂 Conteúdo do diretório:', require('fs').readdirSync(staticPath));
 }
 app.use(express.static(staticPath));
 
 // Rotas específicas para diferentes tipos de usuário (React SPA)
-const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
+// Em produção, usar ./public/index.html, em desenvolvimento usar client/dist/index.html
+const indexPath = process.env.NODE_ENV === 'production'
+  ? path.join(__dirname, 'public', 'index.html')
+  : path.join(__dirname, '..', 'client', 'dist', 'index.html');
+  
 console.log('🔍 Caminho do index.html:', indexPath);
 console.log('🔍 Verificando se index.html existe:', require('fs').existsSync(indexPath));
 
@@ -778,11 +787,11 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/lider', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  res.sendFile(indexPath);
 });
 
 app.get('/gestor', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  res.sendFile(indexPath);
 });
 
 // Rota catch-all removida - será definida após todas as rotas
@@ -1072,7 +1081,6 @@ app.post('/api/setup/create-users', async (req, res) => {
 
 // Rota raiz - servir sistema (React se disponível, senão sistema antigo)
 app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
   console.log('🔍 Tentando servir index.html da rota raiz:', indexPath);
   
   // Verificar se o arquivo existe antes de tentar servir
@@ -1128,7 +1136,6 @@ app.get('*', (req, res) => {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
   
-  const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
   console.log('🔍 Servindo SPA para rota:', req.path, 'usando:', indexPath);
   
   // Verificar se o arquivo existe antes de tentar servir

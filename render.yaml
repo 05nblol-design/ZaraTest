@@ -47,8 +47,16 @@ services:
       echo "📂 Dist contents:"
       ls -la dist/
       
+      # Copiar arquivos do frontend para diretório público
+      echo "📁 Copying frontend files to public directory..."
+      mkdir -p ../public
+      cp -r dist/* ../public/
+      echo "✅ Frontend files copied to public directory"
+      
       # Voltar para diretório raiz
       cd ..
+      echo "📂 Public directory contents:"
+      ls -la public/
       echo "🚀 Build process completed successfully"
     startCommand: |
       echo "🚀 Iniciando Zara Quality System..."
