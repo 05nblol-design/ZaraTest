@@ -85,12 +85,16 @@ export const AuthProvider = ({ children }) => {
       // Suportar ambas as estruturas de resposta (Vercel e servidor local)
       let token, userData;
       
-      if (response.data.data) {
-        // Estrutura do Vercel: { success: true, data: { token, user } }
+      if (response.data.token && response.data.user) {
+        // Estrutura do Vercel: { success: true, token, user }
+        token = response.data.token;
+        userData = response.data.user;
+      } else if (response.data.data) {
+        // Estrutura alternativa: { success: true, data: { token, user } }
         token = response.data.data.token;
         userData = response.data.data.user;
       } else {
-        // Estrutura do servidor local: { success: true, token, user }
+        // Fallback para outras estruturas
         token = response.data.token;
         userData = response.data.user;
       }
