@@ -62,6 +62,35 @@ app.get('/api/quality-tests', (req, res) => {
   });
 });
 
+app.post('/api/quality-tests', (req, res) => {
+  const { machine, lotNumber, parameters, bathtubTest } = req.body;
+  
+  if (!machine || !lotNumber) {
+    return res.status(400).json({
+      success: false,
+      message: 'Máquina e número do lote são obrigatórios'
+    });
+  }
+  
+  const testId = `TEST-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  
+  res.status(201).json({
+    success: true,
+    data: {
+      id: testId,
+      testId,
+      machine,
+      lotNumber,
+      parameters: parameters || { temperature: 180, pressure: 2.5, speed: 100 },
+      bathtubTest: bathtubTest || { enabled: true, duration: 120 },
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      deadline: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    },
+    message: 'Teste de qualidade criado com sucesso'
+  });
+});
+
 app.get('/api/machines', (req, res) => {
   res.json({
     success: true,

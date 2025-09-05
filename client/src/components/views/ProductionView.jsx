@@ -93,6 +93,45 @@ const ProductionView = ({ user }) => {
       loadData()
     } catch (error) {
       console.error('Erro ao completar operação:', error)
+      alert('Erro ao completar operação. Tente novamente.')
+    }
+  }
+
+  const startQualityTest = async () => {
+    if (!selectedMachine) {
+      alert('Por favor, selecione uma máquina para iniciar o teste de qualidade')
+      return
+    }
+
+    try {
+      const lotNumber = prompt('Digite o número do lote:')
+      if (!lotNumber) {
+        alert('Número do lote é obrigatório')
+        return
+      }
+
+      const response = await axios.post('/api/quality-tests', {
+        machine: selectedMachine,
+        lotNumber,
+        parameters: {
+          temperature: 180,
+          pressure: 2.5,
+          speed: 100
+        },
+        bathtubTest: {
+          enabled: true,
+          duration: 120
+        }
+      })
+
+      if (response.data.success) {
+        alert('Teste de qualidade iniciado com sucesso!')
+        // Opcional: redirecionar para a página de testes de qualidade
+        // window.location.href = '/quality-tests'
+      }
+    } catch (error) {
+      console.error('Erro ao iniciar teste de qualidade:', error)
+      alert('Erro ao iniciar teste de qualidade. Tente novamente.')
     }
   }
 
@@ -276,22 +315,42 @@ const ProductionView = ({ user }) => {
 
             <div className="view-actions">
               {!operationActive ? (
-                <button 
-                  className="btn btn-primary btn-lg"
-                  onClick={startOperation}
-                  disabled={!selectedMachine}
-                >
-                  <i className="fas fa-play"></i>
-                  Iniciar Operação
-                </button>
+                <>
+                  <button 
+                    className="btn btn-primary btn-lg"
+                    onClick={startOperation}
+                    disabled={!selectedMachine}
+                  >
+                    <i className="fas fa-play"></i>
+                    Iniciar Operação
+                  </button>
+                  <button 
+                    className="btn btn-secondary btn-lg"
+                    onClick={startQualityTest}
+                    disabled={!selectedMachine}
+                  >
+                    <i className="fas fa-vial"></i>
+                    Iniciar Teste de Qualidade
+                  </button>
+                </>
               ) : (
-                <button 
-                  className="btn btn-success btn-lg"
-                  onClick={completeOperation}
-                >
-                  <i className="fas fa-check"></i>
-                  Concluir Operação
-                </button>
+                <>
+                  <button 
+                    className="btn btn-success btn-lg"
+                    onClick={completeOperation}
+                  >
+                    <i className="fas fa-check"></i>
+                    Concluir Operação
+                  </button>
+                  <button 
+                    className="btn btn-secondary btn-lg"
+                    onClick={startQualityTest}
+                    disabled={!selectedMachine}
+                  >
+                    <i className="fas fa-vial"></i>
+                    Iniciar Teste de Qualidade
+                  </button>
+                </>
               )}
             </div>
           </div>
