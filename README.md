@@ -90,20 +90,36 @@ LOG_LEVEL=debug
 
 ### 4. Configurar MongoDB
 
-#### Opção A: MongoDB Local
+**Você tem 3 opções para o banco de dados:**
 
-1. Instale o MongoDB Community Edition
-2. Inicie o serviço MongoDB
-3. Use a URI: `mongodb://localhost:27017/zara_quality_system`
+#### 🏠 Opção A: MongoDB Local (Gratuito - Recomendado para desenvolvimento)
 
-#### Opção B: MongoDB Atlas (Recomendado)
+✅ **Vantagens:** Gratuito, controle total, sem limites
 
-1. Crie uma conta no [MongoDB Atlas](https://www.mongodb.com/atlas)
-2. Crie um cluster gratuito (M0)
-3. Configure o acesso de rede (0.0.0.0/0 para desenvolvimento)
-4. Crie um usuário de banco de dados
-5. Obtenha a string de conexão
-6. Atualize `MONGODB_URI` no `.env`
+1. **Guia completo:** Consulte `MONGODB-LOCAL-SETUP.md`
+2. **Verificação rápida:** Execute `node scripts/check-mongodb-local.js`
+3. **URI no .env:** `MONGODB_URI=mongodb://localhost:27017/zaraqualitysystem`
+
+#### ☁️ Opção B: MongoDB Atlas (Cloud - Para produção)
+
+✅ **Vantagens:** Alta disponibilidade, backup automático, escalabilidade
+
+1. **Guia completo:** Consulte `MONGODB-ATLAS-SETUP.md`
+2. **URI no .env:** `MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/zaraqualitysystem`
+
+#### 🔒 Opção C: MongoDB Local com Autenticação (Mais seguro)
+
+✅ **Vantagens:** Gratuito + segurança adicional
+
+1. **Configuração:** Siga `MONGODB-LOCAL-SETUP.md` (seção Segurança)
+2. **URI no .env:** `MONGODB_URI=mongodb://admin:senha@localhost:27017/zaraqualitysystem?authSource=admin`
+
+---
+
+**💡 Recomendação:**
+- **Desenvolvimento:** Use Opção A (MongoDB Local)
+- **Produção pequena/média:** Use Opção C (Local + Auth)
+- **Produção crítica:** Use Opção B (Atlas)
 
 ### 5. Inicializar Dados
 
