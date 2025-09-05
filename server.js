@@ -785,15 +785,7 @@ app.get('/gestor', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
 });
 
-// Rota catch-all para SPA routing (deve vir após rotas específicas)
-app.get('*', (req, res, next) => {
-  // Se for uma rota de API, passe para o próximo middleware
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
-  // Para outras rotas, serve o index.html do React para permitir client-side routing
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
-});
+// Rota catch-all removida - será definida após todas as rotas
 
 // Middleware para rotas não encontradas (deve vir após todas as rotas)
 app.use(notFoundHandler);
@@ -1082,7 +1074,30 @@ app.post('/api/setup/create-users', async (req, res) => {
 app.get('/', (req, res) => {
   const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
   console.log('🔍 Tentando servir index.html da rota raiz:', indexPath);
-  res.sendFile(indexPath);
+  
+  // Verificar se o arquivo existe antes de tentar servir
+  if (require('fs').existsSync(indexPath)) {
+    console.log('✅ index.html encontrado, servindo arquivo');
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error('❌ Erro ao servir index.html:', err);
+        res.status(500).json({ error: 'Erro interno do servidor', details: err.message });
+      }
+    });
+  } else {
+    console.error('❌ index.html NÃO encontrado em:', indexPath);
+    console.log('📁 Verificando diretório pai:', path.dirname(indexPath));
+    if (require('fs').existsSync(path.dirname(indexPath))) {
+      console.log('📂 Conteúdo do diretório dist:', require('fs').readdirSync(path.dirname(indexPath)));
+    } else {
+      console.log('❌ Diretório dist não existe');
+    }
+    res.status(404).json({ 
+      error: 'Frontend não encontrado', 
+      path: indexPath,
+      message: 'O arquivo index.html não foi encontrado. Verifique se o build do frontend foi executado corretamente.' 
+    });
+  }
 });
 
 // Rota de status da API
@@ -1112,9 +1127,28 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
+  
   const indexPath = path.join(__dirname, '..', 'client', 'dist', 'index.html');
   console.log('🔍 Servindo SPA para rota:', req.path, 'usando:', indexPath);
-  res.sendFile(indexPath);
+  
+  // Verificar se o arquivo existe antes de tentar servir
+  if (require('fs').existsSync(indexPath)) {
+    console.log('✅ index.html encontrado para SPA routing');
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error('❌ Erro ao servir index.html para SPA:', err);
+        res.status(500).json({ error: 'Erro interno do servidor', details: err.message });
+      }
+    });
+  } else {
+    console.error('❌ index.html NÃO encontrado para SPA em:', indexPath);
+    res.status(404).json({ 
+      error: 'Frontend não encontrado', 
+      path: indexPath,
+      route: req.path,
+      message: 'O arquivo index.html não foi encontrado. Verifique se o build do frontend foi executado corretamente.' 
+    });
+  }
 });
 
 const PORT = config.PORT;
