@@ -34,7 +34,7 @@ services:
       
       # Instalar dependências do frontend (incluindo devDependencies para build)
       echo "📦 Installing frontend dependencies..."
-      npm ci
+      npm install
       echo "✅ Frontend dependencies installed"
       
       # Verificar se node_modules foi criado
@@ -43,10 +43,20 @@ services:
         npm install
       fi
       
+      # Verificar se Vite está disponível
+      echo "🔍 Checking Vite installation..."
+      if ! npm list vite > /dev/null 2>&1; then
+        echo "❌ ERROR: Vite not found in dependencies"
+        echo "📦 Installing Vite explicitly..."
+        npm install vite@latest
+      fi
+      echo "✅ Vite is available"
+      
       # Executar build
       echo "🏗️ Running build..."
-      echo "📋 Current directory before build: $(pwd)"
-      npm run build
+      echo "📁 Current directory before build: $(pwd)"
+      echo "🔧 Setting NODE_ENV for build..."
+      NODE_ENV=production npm run build
       echo "✅ Frontend build completed"
       
       # Debug: listar conteúdo após build
