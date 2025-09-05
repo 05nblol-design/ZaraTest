@@ -540,6 +540,16 @@ const indexPath = process.env.NODE_ENV === 'production'
 console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
 console.log('🔍 Caminho do index.html:', indexPath);
 
+// Servir arquivos estáticos do frontend ANTES de conectar ao MongoDB
+console.log('🔍 Verificando se diretório existe:', require('fs').existsSync(staticPath));
+if (require('fs').existsSync(staticPath)) {
+  console.log('📂 Conteúdo do diretório:', require('fs').readdirSync(staticPath));
+}
+app.use(express.static(staticPath));
+
+// Verificar se index.html existe
+console.log('🔍 Verificando se index.html existe:', require('fs').existsSync(indexPath));
+
 // Iniciar o servidor MongoDB e registrar rotas após conexão
 startServer().then(() => {
   // Endpoint de debug para rota operador
@@ -765,15 +775,7 @@ app.use('/api/notifications', require('./src/routes/notifications'));
 app.use('/api/dashboard', require('./src/routes/dashboard'));
 app.use('/api/sse', require('./src/routes/sse'));
 
-// Servir arquivos estáticos do frontend
-console.log('🔍 Verificando se diretório existe:', require('fs').existsSync(staticPath));
-if (require('fs').existsSync(staticPath)) {
-  console.log('📂 Conteúdo do diretório:', require('fs').readdirSync(staticPath));
-}
-app.use(express.static(staticPath));
-
-// Verificar se index.html existe
-console.log('🔍 Verificando se index.html existe:', require('fs').existsSync(indexPath));
+// Arquivos estáticos já configurados antes da conexão com MongoDB
 
 app.get('/operador', (req, res) => {
   res.sendFile(indexPath);
