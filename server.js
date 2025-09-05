@@ -1111,6 +1111,7 @@ app.get('*', (req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API endpoint not found' });
   }
+  const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
   console.log('🔍 Servindo SPA para rota:', req.path, 'usando:', indexPath);
   res.sendFile(indexPath);
 });
