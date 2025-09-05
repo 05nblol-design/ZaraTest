@@ -9,19 +9,23 @@ services:
     region: oregon  # us-west-1 (mais próximo do Brasil)
     buildCommand: |
       echo "🔧 Iniciando build do Zara Quality System..."
-      npm ci --only=production
+      npm ci --only=production || { echo "❌ Falha ao instalar dependências do backend"; exit 1; }
       echo "✅ Dependências do backend instaladas!"
       echo "🔧 Construindo frontend React..."
-      cd client
+      cd client || { echo "❌ Falha ao acessar diretório client"; exit 1; }
       echo "📁 Diretório atual: $(pwd)"
-      npm ci
+      echo "📂 Conteúdo do diretório client:"
+      ls -la
+      npm ci || { echo "❌ Falha ao instalar dependências do frontend"; exit 1; }
       echo "📦 Executando npm run build..."
-      npm run build
+      npm run build || { echo "❌ Falha no build do frontend"; exit 1; }
       echo "📁 Verificando se dist foi criado:"
-      if [ -d "dist" ]; then echo "✅ Diretório dist existe"; else echo "❌ Diretório dist NÃO existe"; fi
-      if [ -f "dist/index.html" ]; then echo "✅ index.html encontrado"; else echo "❌ index.html NÃO encontrado"; fi
+      if [ -d "dist" ]; then echo "✅ Diretório dist existe"; else echo "❌ Diretório dist NÃO existe"; exit 1; fi
+      if [ -f "dist/index.html" ]; then echo "✅ index.html encontrado"; else echo "❌ index.html NÃO encontrado"; exit 1; fi
       echo "📂 Conteúdo do diretório dist:"
-      ls -la dist/ || echo "❌ Falha ao listar dist/"
+      ls -la dist/ || { echo "❌ Falha ao listar dist/"; exit 1; }
+      echo "📏 Tamanho do index.html:"
+      wc -c dist/index.html || echo "❌ Falha ao verificar tamanho do index.html"
       cd ..
       echo "🚀 Preparando para deploy..."
     startCommand: |
