@@ -528,7 +528,48 @@ const operationSessionRoutes = require('./src/routes/operationSession');
 
 // Iniciar o servidor MongoDB e registrar rotas após conexão
 startServer().then(() => {
-  // Endpoint de debug temporário
+  // Endpoint de debug para rota operador
+app.get('/api/debug/operador', (req, res) => {
+  try {
+    const fs = require('fs');
+    const filePath = path.join(__dirname, 'client', 'dist', 'index.html');
+    
+    // Verificar se o arquivo existe
+    const fileExists = fs.existsSync(filePath);
+    
+    // Verificar se a pasta dist existe
+    const distPath = path.join(__dirname, 'client', 'dist');
+    const distExists = fs.existsSync(distPath);
+    
+    // Listar arquivos na pasta dist se existir
+    let distFiles = [];
+    if (distExists) {
+      distFiles = fs.readdirSync(distPath);
+    }
+    
+    res.json({
+      success: true,
+      debug: {
+        filePath,
+        fileExists,
+        distPath,
+        distExists,
+        distFiles,
+        __dirname,
+        nodeEnv: process.env.NODE_ENV,
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
+// Endpoint de debug temporário
 app.get('/api/debug/status', async (req, res) => {
   try {
     const User = require('./src/models/User');
@@ -715,7 +756,19 @@ app.use(express.static(path.join(__dirname, 'client', 'dist')));
 
 // Rotas específicas para diferentes tipos de usuário (React SPA)
 app.get('/operador', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  try {
+    console.log('🔍 Tentando servir /operador');
+    const filePath = path.join(__dirname, 'client', 'dist', 'index.html');
+    console.log('📁 Caminho do arquivo:', filePath);
+    res.sendFile(filePath);
+  } catch (error) {
+    console.error('❌ Erro ao servir /operador:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao servir página do operador',
+      error: error.message
+    });
+  }
 });
 
 app.get('/login', (req, res) => {
