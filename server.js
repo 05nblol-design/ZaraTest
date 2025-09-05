@@ -752,19 +752,29 @@ app.use('/api/dashboard', require('./src/routes/dashboard'));
 app.use('/api/sse', require('./src/routes/sse'));
 
 // Servir arquivos estáticos do React build
-app.use(express.static(path.join(__dirname, 'client', 'dist')));
+const staticPath = path.join(__dirname, 'client', 'dist');
+console.log('🔍 Caminho dos arquivos estáticos:', staticPath);
+console.log('🔍 Verificando se o diretório existe:', require('fs').existsSync(staticPath));
+if (require('fs').existsSync(staticPath)) {
+  console.log('📁 Arquivos no diretório dist:', require('fs').readdirSync(staticPath));
+}
+app.use(express.static(staticPath));
 
 // Rotas específicas para diferentes tipos de usuário (React SPA)
+const indexPath = path.join(__dirname, 'client', 'dist', 'index.html');
+console.log('🔍 Caminho do index.html:', indexPath);
+console.log('🔍 Verificando se index.html existe:', require('fs').existsSync(indexPath));
+
 app.get('/operador', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(indexPath);
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(indexPath);
 });
 
 app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  res.sendFile(indexPath);
 });
 
 app.get('/lider', (req, res) => {
@@ -1070,7 +1080,8 @@ app.post('/api/setup/create-users', async (req, res) => {
 
 // Rota raiz - servir sistema (React se disponível, senão sistema antigo)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+  console.log('🔍 Tentando servir index.html da rota raiz:', indexPath);
+  res.sendFile(indexPath);
 });
 
 // Rota de status da API
@@ -1094,6 +1105,16 @@ app.get('/api/status', (req, res) => {
 });
 
 // Iniciar o servidor
+// Rota catch-all para React SPA (deve ser a última rota)
+app.get('*', (req, res) => {
+  // Não interceptar rotas da API
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  console.log('🔍 Servindo SPA para rota:', req.path, 'usando:', indexPath);
+  res.sendFile(indexPath);
+});
+
 const PORT = config.PORT;
 const HOST = process.env.NODE_ENV === 'production' ? undefined : '0.0.0.0';
 server.listen(PORT, HOST, () => {
