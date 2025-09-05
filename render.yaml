@@ -14,7 +14,7 @@ services:
       echo "📂 Conteúdo do diretório raiz:"
       ls -la
       echo "📦 Instalando dependências do backend..."
-      npm ci --only=production || { echo "❌ Falha ao instalar dependências do backend"; exit 1; }
+      npm install --production || { echo "❌ Falha ao instalar dependências do backend"; exit 1; }
       echo "✅ Dependências do backend instaladas!"
       echo "🔧 Construindo frontend React..."
       cd client || { echo "❌ Falha ao acessar diretório client"; exit 1; }
@@ -22,24 +22,24 @@ services:
       echo "📂 Conteúdo do diretório client:"
       ls -la
       echo "📦 Instalando dependências do frontend..."
-       npm ci || { echo "❌ Falha ao instalar dependências do frontend"; exit 1; }
-       echo "✅ Dependências do frontend instaladas!"
-       echo "📦 Executando npm run build..."
-       npm run build || { echo "❌ Falha no build do frontend"; exit 1; }
-       echo "✅ Build do frontend concluído!"
-       echo "📁 Verificando se dist foi criado:"
-       if [ -d "dist" ]; then echo "✅ Diretório dist existe"; else echo "❌ Diretório dist NÃO existe"; exit 1; fi
-       if [ -f "dist/index.html" ]; then echo "✅ index.html encontrado"; else echo "❌ index.html NÃO encontrado"; exit 1; fi
-       echo "📂 Conteúdo do diretório dist:"
-       ls -la dist/ || { echo "❌ Falha ao listar dist/"; exit 1; }
-       echo "📏 Tamanho do index.html:"
-       wc -c dist/index.html || echo "❌ Falha ao verificar tamanho do index.html"
-       echo "📁 Voltando para diretório raiz..."
-       cd ..
-       echo "📁 Diretório atual após voltar: $(pwd)"
-       echo "📂 Verificando estrutura final:"
-       ls -la client/dist/ || echo "❌ Falha ao verificar client/dist/"
-       echo "🚀 Build completo - Preparando para deploy..."
+      npm install || { echo "❌ Falha ao instalar dependências do frontend"; exit 1; }
+      echo "✅ Dependências do frontend instaladas!"
+      echo "📦 Executando npm run build..."
+      NODE_ENV=production npm run build || { echo "❌ Falha no build do frontend"; exit 1; }
+      echo "✅ Build do frontend concluído!"
+      echo "📁 Verificando se dist foi criado:"
+      if [ -d "dist" ]; then echo "✅ Diretório dist existe"; else echo "❌ Diretório dist NÃO existe"; exit 1; fi
+      if [ -f "dist/index.html" ]; then echo "✅ index.html encontrado"; else echo "❌ index.html NÃO encontrado"; exit 1; fi
+      echo "📂 Conteúdo do diretório dist:"
+      ls -la dist/ || { echo "❌ Falha ao listar dist/"; exit 1; }
+      echo "📏 Tamanho do index.html:"
+      wc -c dist/index.html || echo "❌ Falha ao verificar tamanho do index.html"
+      echo "📁 Voltando para diretório raiz..."
+      cd ..
+      echo "📁 Diretório atual após voltar: $(pwd)"
+      echo "📂 Verificando estrutura final:"
+      ls -la client/dist/ || echo "❌ Falha ao verificar client/dist/"
+      echo "🚀 Build completo - Preparando para deploy..."
     startCommand: |
       echo "🚀 Iniciando Zara Quality System..."
       echo "📊 Modo: $NODE_ENV"
